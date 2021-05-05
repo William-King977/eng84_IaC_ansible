@@ -1,23 +1,23 @@
 Vagrant.configure("2") do |config|
 
-# creating first VM called web
+  # creating first VM called web
   config.vm.define "web" do |web|
 
+    # downloading ubuntu 18.04 image
     web.vm.box = "bento/ubuntu-18.04"
-   # downloading ubuntu 18.04 image
 
-    web.vm.hostname = 'web'
     # assigning host name to the VM
+    web.vm.hostname = 'web'
 
+    # assigning private IP
     web.vm.network :private_network, ip: "192.168.33.10"
-    #   assigning private IP
 
-    config.hostsupdater.aliases = ["development.web"]
     # creating a link called development.web so we can access web page with this link instread of an IP
+    config.hostsupdater.aliases = ["development.web"]
 
   end
 
-# creating second VM called db
+  # creating second VM called db
   config.vm.define "db" do |db|
 
     db.vm.box = "bento/ubuntu-18.04"
@@ -29,7 +29,7 @@ Vagrant.configure("2") do |config|
     config.hostsupdater.aliases = ["development.db"]
   end
 
-# Creating third VM called controller
+  # Creating third VM called controller
   config.vm.define "controller" do |controller|
 
     controller.vm.box = "bento/ubuntu-18.04"
@@ -39,5 +39,5 @@ Vagrant.configure("2") do |config|
     controller.vm.network :private_network, ip: "192.168.33.12"
 
     config.hostsupdater.aliases = ["development.controller"]
-   end
+  end
 end
