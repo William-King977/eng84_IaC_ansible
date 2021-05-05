@@ -39,28 +39,44 @@ Ansible is an IT automation engine that automates cloud provisioning, configurat
 
 ### Benefits
 * **Simple** - uses YAML (Yet Another Markup Language), so it's human readable
-* **Agentless** - makes it lightweight on agent nodes, no need to install in agent notes
+* **Agentless** - makes it lightweight on agent nodes. No need to install in agent notes, only the master node.
 * **Secure** - uses SSH to connect to other servers
+* **Integration** - can be integrated with other tools, such as Docker and Jenkins
 
 ### Adhoc commands
-Ansible adhoc commands can be used to find out the configurations/run commands for other servers from the Ansible controller.
+Adhoc commands can be used to run commands in other servers from the Ansible controller.
 
 * `ssh vagrant@server_ip` - SSH into another vagrant machine
+* `hosts` file holds info to configure with the other servers (stored in `/etc/ansible` directory)
+
+Adding a web host in the `hosts` file:
+```
+[web]
+192.168.33.10 ansible_connection=ssh ansible_ssh_user=vagrant ansible_ssh_pass=vagrant
+```
+
+Commands with the web server:
 * `ansible web -m ping` - ping into the web server
 * `ansible all -m ping` - ping all the machines
 * `ansible web -a "free -m"` - display available memory in web server
-* `ansible web -m shell -a "ls -a"` - display file structure in web server
+* `ansible web -a "ls -a"` - display file structure in web server
+* `ansible web -a "command"` - can be done with any command
+* `ansible web -m shell -a "command"` - add `-m shell` if necessary
 * `-m` - specifies a module
 * `-a` - an adhoc
 
+Uptime, Update and Upgrade commands:
+* `ansible all -a "uptime"` - uptime for all machines
+* `ansible db -a "uptime"` - uptime for the database
+* `ansible all -a "sudo apt-get update -y"` - update Linux on all machines
+* `ansible all -a "sudo apt-get upgrade -y"` - upgrade Linux on all machines
 
-* `ansible all -m shell -a "uptime"` - uptime for all machines
-* `ansible db -m shell -a "uptime"` - uptime for the database
+### Playbooks
+* Playbooks are configuration files used to run commands that are often used.
+* Same location as the `hosts` file (`/etc/ansible`)
+* Indentation is important!
 
+Making playbook files:
+* `sudo nano install_nginx.yml` - creating a YAML file to install Nginx
+* `ansible-playbook install_nginx.yml` - run the YAML file
 
-* `ansible all -m shell -a "sudo apt-get update -y"` - update Linux on all machines
-* `ansible all -m shell -a "sudo apt-get upgrade -y"` - upgrade Linux on all machines
-
-
-* `hosts` file holds info to configure with the other servers (stored in `/etc/ansible` directory)
-* `ansible web -a "uname -a"` - view info about the web server
