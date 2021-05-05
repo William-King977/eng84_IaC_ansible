@@ -43,6 +43,9 @@ Ansible is an IT automation engine that automates cloud provisioning, configurat
 * **Secure** - uses SSH to connect to other servers
 * **Integration** - can be integrated with other tools, such as Docker and Jenkins
 
+### Ansible Architecture
+![image](https://user-images.githubusercontent.com/44005332/117135325-b0f1b280-ad9e-11eb-913d-b0bd08c951fa.png)
+
 ### Adhoc commands
 Adhoc commands can be used to run commands in other servers from the Ansible controller.
 
