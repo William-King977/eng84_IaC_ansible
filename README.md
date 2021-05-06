@@ -188,6 +188,23 @@ In the `controller`, do the following:
             assign_public_ip: yes
         tags: ['never', 'create_ec2']
    ```
-3. Execute `sudo ansible-playbook playbook_name.yml --ask-vault-pass` to run the file without launching the instances
-4. Execute `sudo ansible-playbook playbook_name.yml --ask-vault-pass --tags create_ec2` to launch both EC2 instances
-5. If the above commands worked, both EC2 instances will be running on AWS
+4. Execute `sudo ansible-playbook playbook_name.yml --ask-vault-pass` to run the file without launching the instances
+5. Execute `sudo ansible-playbook playbook_name.yml --ask-vault-pass --tags create_ec2` to launch both EC2 instances
+6. If the above commands worked, both EC2 instances will be running on AWS
+
+### Running Commands from the Controller
+1. Import the key (usually `.pem`):
+   * **Vagrant:** scp ~/.ssh/key_name vagrant@controller_ip:~/key_name
+   * **EC2 AWS:** scp -i ~/.ssh/DevOpsStudent.pem -r ~/.ssh/key_name ubuntu@controller_ec2_public_ip:~/key_name
+   * Then move it to the `~/.ssh` folder.
+2. Use `chmod 400` to ensure it's readable for YOU only
+3. Modify the `hosts` file in `/etc/ansible`, and modify `web` and `db` with the following contents:
+   ```
+   [web]
+   web_public_ip ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/key.pem
+
+   [db]
+   db_public_ip ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/key.pem
+   ```
+4. The `web`, `db` security groups and NACLs need to be modified to allow the Controller to SSH into them
+5. Now, you can execute commands like this: `sudo ansible web -a "command" --ask-vault-pass`
