@@ -75,11 +75,119 @@ Uptime, Update and Upgrade commands:
 * `ansible all -a "sudo apt-get upgrade -y"` - upgrade Linux on all machines
 
 ### Playbooks
-* Playbooks are configuration files used to run commands that are often used.
+* Playbooks are written in YAML (.yml/yaml) with a set of instructions/tasks to do the configuration management on the hosts/agent nodes.
 * Same location as the `hosts` file (`/etc/ansible`)
-* Indentation is important!
+* Indentation is important! It must be 2 spaces, no tabs.
 
 Making playbook files:
 * `sudo nano install_nginx.yml` - creating a YAML file to install Nginx
 * `ansible-playbook install_nginx.yml` - run the YAML file
 
+### Ansible Vault
+Dependencies:
+* sudo apt-add-repository --yes --update ppa:ansible/ansible
+* sudo apt install ansible -y
+* sudo apt install python3-pip -y
+* pip3 install awscli
+* pip3 install boto boto3
+* sudo apt-get upgrade -y
+
+#### Create a Vault file
+* Go to the `/etc/ansible/` directory
+* `mkdir group_vars`, then go inside
+* `mkdir all`, then go inside
+* Create the file using `sudo ansible-vault create pass.yml` - then inside:
+  * `aws_access_key: place_here`
+  * `aws_secret_key: place_here`
+  * To exit: `esc` > `:wq` > Enter
+* The contents of `pass.yml` is encrypted
+
+To run YAML files with the vault: `sudo ansible-playbook install_nginx.yml --ask-vault-pass`
+
+#### Removing the Vault
+Do the following in both the `web` and `db` machines:
+* `cd /etc/ssh/`
+* `sudo nano sshd_config`
+* Inside, ensure that `PermitRootLogin yes` and `PasswordAuthentication yes` are set to `yes` or uncommented.
+* Restart SSH using `sudo systemctl restart ssh`
+
+In the `controller`, do the following:
+* Delete the vault file
+* `sudo ansible-playbook install_nginx.yml` or other YAML files should work now
+
+### Launching EC2 Instances with a Playbook
+1. Configure a vault as shown in **Create a Vault file**
+2. On the `/etc/ansible` directory, modify the `hosts` file and add the following code to enable Python3:
+   ```
+   [local]
+   localhost ansible_python_interpreter=/usr/bin/python3
+
+   ```
+3. Create a Playbook file (YAML) with the following contents:
+   ```
+   ---
+   - hosts: localhost
+     connection: local
+     gather_facts: True
+
+     vars:
+       key_name: your_key_name
+       region: eu-west-1
+
+     # Ubuntu Server 16.04 LTS (HVM), SSD Volume Type
+     image: ami-038d7b856fe7557b3
+     subnet_id: your_subnet_id
+
+     tasks:
+      - name: Facts
+        block:
+        - name: Get instances facts
+          ec2_instance_facts:
+            aws_access_key: "{{aws_access_key}}"
+            aws_secret_key: "{{aws_secret_key}}"
+            region: "{{ region }}"
+          register: result
+        tags: always
+
+      - name: Provisioning EC2 instances
+        block:
+        - name: Creating Web Instance
+          # Web instance
+          ec2:
+            aws_access_key: "{{aws_access_key}}"
+            aws_secret_key: "{{aws_secret_key}}"
+            key_name: "{{ key_name }}"
+            instance_tags:
+              Name: eng84_william_ansible_web
+            id: eng84_william_ansible_web
+            image: "{{ image }}"
+            vpc_subnet_id: "{{ subnet_id }}"
+            group_id: web_security_group_id
+            instance_type: t2.micro
+            region: "{{ region }}"
+            wait: true
+            count: 1
+            assign_public_ip: yes
+
+        - name: Creating Database Instance
+          # DB instance
+          ec2:
+            aws_access_key: "{{aws_access_key}}"
+            aws_secret_key: "{{aws_secret_key}}"
+            key_name: "{{ key_name }}"
+            instance_tags:
+              Name: eng84_william_ansible_db
+            id: eng84_william_ansible_db
+            image: "{{ image }}"
+            vpc_subnet_id: "{{ subnet_id }}"
+            group_id: db_security_group_id
+            instance_type: t2.micro
+            region: "{{ region }}"
+            wait: true
+            count: 1
+            assign_public_ip: yes
+        tags: ['never', 'create_ec2']
+   ```
+3. Execute `sudo ansible-playbook playbook_name.yml --ask-vault-pass` to run the file without launching the instances
+4. Execute `sudo ansible-playbook playbook_name.yml --ask-vault-pass --tags create_ec2` to launch both EC2 instances
+5. If the above commands worked, both EC2 instances will be running on AWS
