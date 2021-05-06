@@ -194,8 +194,8 @@ In the `controller`, do the following:
 
 ### Running Commands from the Controller
 1. Import the key (usually `.pem`):
-   * **Vagrant:** scp ~/.ssh/key_name vagrant@controller_ip:~/key_name
-   * **EC2 AWS:** scp -i ~/.ssh/DevOpsStudent.pem -r ~/.ssh/key_name ubuntu@controller_ec2_public_ip:~/key_name
+   * **Vagrant:** `scp ~/.ssh/key_name vagrant@controller_ip:~/key_name`
+   * **EC2 AWS:** `scp -i ~/.ssh/DevOpsStudent.pem -r ~/.ssh/key_name ubuntu@controller_ec2_public_ip:~/key_name`
    * Then move it to the `~/.ssh` folder.
 2. Use `chmod 400` to ensure it's readable for YOU only
 3. Modify the `hosts` file in `/etc/ansible`, and modify `web` and `db` with the following contents:
