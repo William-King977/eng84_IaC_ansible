@@ -1,0 +1,54 @@
+---
+# Run Mongodb Playbook
+- name: start mongodb
+  import_playbook: provision_mongodb.yml
+
+# Run Nginx Playbook
+- name: Install nginx
+  import_playbook: provision_nginx_proxy.yml
+
+# Install nodejs and NPM
+- hosts: web
+  gather_facts: true
+  become: true
+
+  tasks:
+  #- name: Cloning CI/CD Jenkins repo
+    #shell:
+      #cmd: git clone https://github.com/William-King977/eng84_cicd_jenkins.git
+
+  - name: Install nodejs
+    shell: |
+      curl -sL https://deb.nodesource.com/setup_13.x | sudo -E bash -
+      sudo apt-get install nodejs -y
+    #apt: pkg=nodejs state=present
+
+  - name: Install NPM
+    npm:
+      global: yes
+      name: "{{ item }}"
+    with_items:
+      - firebase-tools
+
+  - name: Download latest npm + Mongoose
+    shell: |
+      npm install -g npm@latest
+      npm install mongoose -y
+
+  # Installing pm2
+  - name: Install pm2
+    npm:
+      name: pm2
+      global: yes
+
+  - name: seeding and running app
+    shell: |
+      cd /home/ubuntu/eng84_cicd_jenkins/app/
+      npm install
+      node seeds/seed.js
+
+      pm2 kill
+      pm2 start app.js
+    environment:
+      DB_HOST: mongodb://10.59.1.23:27017/posts?authSource=admin
+    become_user: root

@@ -1,0 +1,62 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: True
+
+  vars:
+    key_name: eng84devops
+    region: eu-west-1
+
+    # Ubuntu Server 16.04 LTS (HVM), SSD Volume Type
+    image: ami-038d7b856fe7557b3
+    subnet_id: subnet-0b90e6d44c657e0b9 
+
+  tasks:
+    - name: Facts
+      block:
+      - name: Get instances facts
+        ec2_instance_facts:
+          aws_access_key: "{{aws_access_key}}"
+          aws_secret_key: "{{aws_secret_key}}"
+          region: "{{ region }}"
+        register: result
+      tags: always
+
+    - name: Provisioning EC2 instances
+      block:
+      - name: Creating Web Instance
+        # Web instance
+        ec2:
+          aws_access_key: "{{aws_access_key}}"
+          aws_secret_key: "{{aws_secret_key}}"
+          key_name: "{{ key_name }}"
+          instance_tags:
+            Name: eng84_william_ansible_web
+          image: "{{ image }}"
+          vpc_subnet_id: "{{ subnet_id }}"
+          group_id: sg-0f85dd497123d5cb2
+          instance_type: t2.micro
+          region: "{{ region }}"
+          wait: true
+          count: 1
+          private_ip: 10.59.1.110
+          assign_public_ip: yes
+
+      - name: Creating Database Instance
+        # DB instance
+        ec2:
+          aws_access_key: "{{aws_access_key}}"
+          aws_secret_key: "{{aws_secret_key}}"
+          key_name: "{{ key_name }}"
+          instance_tags:
+            Name: eng84_william_ansible_db
+          image: "{{ image }}"
+          vpc_subnet_id: "{{ subnet_id }}"
+          group_id: sg-0f7bb5491d181a66b
+          instance_type: t2.micro
+          region: "{{ region }}"
+          wait: true
+          count: 1
+          private_ip: 10.59.1.23
+          assign_public_ip: yes
+      tags: ['never', 'launch_ec2']
