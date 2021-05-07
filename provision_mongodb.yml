@@ -1,0 +1,56 @@
+---
+- hosts: db
+  gather_facts: yes
+  become: true
+
+  tasks:
+  - name: Update Linux
+    shell:
+      cmd: sudo apt-get update -y
+
+  - name: Upgrade Linux
+    shell:
+      cmd: sudo apt-get upgrade -y
+
+  - name: install mongodb
+    apt: pkg=mongodb state=present
+
+  - name: Remove mongodb file (delete file)
+    file:
+      path: /etc/mongodb.conf
+      state: absent
+
+  - name: Touch a file, using symbolic modes to set the permissions
+    file:
+      path: /etc/mongodb.conf
+      state: touch
+      mode: 0644
+
+  - name: Insert multiple lines and backup
+    blockinfile:
+      path: /etc/mongodb.conf
+      block: |
+        # mongodb.conf
+        storage:
+          dbPath: /var/lib/mongodb
+          journal:
+            enabled: true
+        systemLog:
+          destination: file
+          logAppend: true
+          path: /var/log/mongodb/mongod.log
+        net:
+          port: 27017
+          bindIp: 0.0.0.0
+
+  - name: Restart mongodb
+    become: true
+    shell: systemctl restart mongodb
+
+  - name: Enable mongodb
+    become: true
+    shell: systemctl enable mongodb
+
+  - name: Start mongodb
+    become: true
+    shell: systemctl start mongodb

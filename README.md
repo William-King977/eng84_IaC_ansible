@@ -85,18 +85,24 @@ Making playbook files:
 
 ### Ansible Vault
 Dependencies:
-* sudo apt-add-repository --yes --update ppa:ansible/ansible
-* sudo apt install ansible -y
-* sudo apt install python3-pip -y
-* pip3 install awscli
-* pip3 install boto boto3
-* sudo apt-get upgrade -y
+```
+sudo apt-get update -y
+sudo apt-get upgrade -y
+sudo apt-get install software-properties-common
+sudo apt-add-repository --yes --update ppa:ansible/ansible
+sudo apt-get update -y
+
+sudo apt install ansible -y
+sudo apt install python3-pip -y
+pip3 install awscli
+pip3 install boto boto3
+```
 
 #### Create a Vault file
 * Go to the `/etc/ansible/` directory
 * `mkdir group_vars`, then go inside
 * `mkdir all`, then go inside
-* Create the file using `sudo ansible-vault create pass.yml` - then inside:
+* Create the file using `sudo ansible-vault create pass.yml` - then inside, add both keys:
   * `aws_access_key: place_here`
   * `aws_secret_key: place_here`
   * To exit: `esc` > `:wq` > Enter
@@ -121,75 +127,10 @@ In the `controller`, do the following:
    ```
    [local]
    localhost ansible_python_interpreter=/usr/bin/python3
-
    ```
-3. Create a Playbook file (YAML) with the following contents:
-   ```
-   ---
-   - hosts: localhost
-     connection: local
-     gather_facts: True
-
-     vars:
-       key_name: your_key_name
-       region: eu-west-1
-
-     # Ubuntu Server 16.04 LTS (HVM), SSD Volume Type
-     image: ami-038d7b856fe7557b3
-     subnet_id: your_subnet_id
-
-     tasks:
-      - name: Facts
-        block:
-        - name: Get instances facts
-          ec2_instance_facts:
-            aws_access_key: "{{aws_access_key}}"
-            aws_secret_key: "{{aws_secret_key}}"
-            region: "{{ region }}"
-          register: result
-        tags: always
-
-      - name: Provisioning EC2 instances
-        block:
-        - name: Creating Web Instance
-          # Web instance
-          ec2:
-            aws_access_key: "{{aws_access_key}}"
-            aws_secret_key: "{{aws_secret_key}}"
-            key_name: "{{ key_name }}"
-            instance_tags:
-              Name: eng84_william_ansible_web
-            id: eng84_william_ansible_web
-            image: "{{ image }}"
-            vpc_subnet_id: "{{ subnet_id }}"
-            group_id: web_security_group_id
-            instance_type: t2.micro
-            region: "{{ region }}"
-            wait: true
-            count: 1
-            assign_public_ip: yes
-
-        - name: Creating Database Instance
-          # DB instance
-          ec2:
-            aws_access_key: "{{aws_access_key}}"
-            aws_secret_key: "{{aws_secret_key}}"
-            key_name: "{{ key_name }}"
-            instance_tags:
-              Name: eng84_william_ansible_db
-            id: eng84_william_ansible_db
-            image: "{{ image }}"
-            vpc_subnet_id: "{{ subnet_id }}"
-            group_id: db_security_group_id
-            instance_type: t2.micro
-            region: "{{ region }}"
-            wait: true
-            count: 1
-            assign_public_ip: yes
-        tags: ['never', 'create_ec2']
-   ```
+3. Create a Playbook file (YAML) with contents similar to `launch_ec2_instances.yml`
 4. Execute `sudo ansible-playbook playbook_name.yml --ask-vault-pass` to run the file without launching the instances
-5. Execute `sudo ansible-playbook playbook_name.yml --ask-vault-pass --tags create_ec2` to launch both EC2 instances
+5. Execute `sudo ansible-playbook playbook_name.yml --ask-vault-pass --tags launch_ec2` to launch both EC2 instances
 6. If the above commands worked, both EC2 instances will be running on AWS
 
 ### Running Commands from the Controller
@@ -199,12 +140,22 @@ In the `controller`, do the following:
    * Then move it to the `~/.ssh` folder.
 2. Use `chmod 400` to ensure it's readable for YOU only
 3. Modify the `hosts` file in `/etc/ansible`, and modify `web` and `db` with the following contents:
+
    ```
    [web]
-   web_public_ip ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/key.pem
+   web_private_ip ansible_connection=ssh ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/key.pem
 
    [db]
-   db_public_ip ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/key.pem
+   db_private_ip ansible_connection=ssh ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/key.pem
    ```
-4. The `web`, `db` security groups and NACLs need to be modified to allow the Controller to SSH into them
-5. Now, you can execute commands like this: `sudo ansible web -a "command" --ask-vault-pass`
+
+4. NOTE: the IP must be public if your controller is running on Vagrant
+5. The `web`, `db` security groups and NACLs need to be modified to allow the controller to SSH into them
+6. Now, you can execute commands like this: `sudo ansible web -a "command" --ask-vault-pass`
+
+### Using Playbooks to Install Dependencies
+Before carrying out these steps, ensure that `provision_mongodb.yml`, `provision_nginx_proxy.yml` and `provision_nodejs_web.yml` are created with the same contents (change where applicable).
+1. SSH into the web instance and clone your repository: `git clone https://github.com/William-King977/eng84_cicd_jenkins.git`
+2. Modify the database's security group to allow all traffic from the web app
+3. Run the nodejs playbook using `sudo ansible-playbook provision_nodejs_web.yml --ask-vault-pass`. This playbook also executes the other two playbooks mentioned previously.
+4. After running the playbook, the web app will be running on its public IP and the other features will be working as well (posts and Fibonacci)
