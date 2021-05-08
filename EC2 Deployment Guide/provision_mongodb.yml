@@ -12,7 +12,7 @@
     shell:
       cmd: sudo apt-get upgrade -y
 
-  - name: install mongodb
+  - name: Install mongodb
     apt: pkg=mongodb state=present
 
   - name: Remove mongodb file (delete file)

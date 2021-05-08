@@ -81,9 +81,9 @@ Uptime, Update and Upgrade commands:
 
 Making playbook files:
 * `sudo nano install_nginx.yml` - creating a YAML file to install Nginx
-* `ansible-playbook install_nginx.yml` - run the YAML file
+* `sudo ansible-playbook install_nginx.yml` - run the YAML file
 
-### Ansible Vault
+## Ansible Vault
 Dependencies:
 ```
 sudo apt-get update -y
@@ -98,19 +98,19 @@ pip3 install awscli
 pip3 install boto boto3
 ```
 
-#### Create a Vault file
-* Go to the `/etc/ansible/` directory
-* `mkdir group_vars`, then go inside
-* `mkdir all`, then go inside
-* Create the file using `sudo ansible-vault create pass.yml` - then inside, add both keys:
+### Create a Vault file
+1. Go to the `/etc/ansible/` directory
+2. `mkdir group_vars`, then go inside
+3. `mkdir all`, then go inside
+4. Create the file using `sudo ansible-vault create pass.yml` - then inside, add both keys:
   * `aws_access_key: place_here`
   * `aws_secret_key: place_here`
-  * To exit: `esc` > `:wq` > Enter
+  * To exit: `Esc` > `Shift` + `:` > `wq` > Enter
 * The contents of `pass.yml` is encrypted
+* To run YAML files with the vault: `sudo ansible-playbook install_nginx.yml --ask-vault-pass`
+* It can only be edited with `sudo ansible-vault edit pass.yml`
 
-To run YAML files with the vault: `sudo ansible-playbook install_nginx.yml --ask-vault-pass`
-
-#### Removing the Vault
+### Removing the Vault
 Do the following in both the `web` and `db` machines:
 * `cd /etc/ssh/`
 * `sudo nano sshd_config`
@@ -120,42 +120,3 @@ Do the following in both the `web` and `db` machines:
 In the `controller`, do the following:
 * Delete the vault file
 * `sudo ansible-playbook install_nginx.yml` or other YAML files should work now
-
-### Launching EC2 Instances with a Playbook
-1. Configure a vault as shown in **Create a Vault file**
-2. On the `/etc/ansible` directory, modify the `hosts` file and add the following code to enable Python3:
-   ```
-   [local]
-   localhost ansible_python_interpreter=/usr/bin/python3
-   ```
-3. Create a Playbook file (YAML) with contents similar to `launch_ec2_instances.yml`
-4. Execute `sudo ansible-playbook playbook_name.yml --ask-vault-pass` to run the file without launching the instances
-5. Execute `sudo ansible-playbook playbook_name.yml --ask-vault-pass --tags launch_ec2` to launch both EC2 instances
-6. If the above commands worked, both EC2 instances will be running on AWS
-
-### Running Commands from the Controller
-1. Import the key (usually `.pem`):
-   * **Vagrant:** `scp ~/.ssh/key_name vagrant@controller_ip:~/key_name`
-   * **EC2 AWS:** `scp -i ~/.ssh/DevOpsStudent.pem -r ~/.ssh/key_name ubuntu@controller_ec2_public_ip:~/key_name`
-   * Then move it to the `~/.ssh` folder.
-2. Use `chmod 400` to ensure it's readable for YOU only
-3. Modify the `hosts` file in `/etc/ansible`, and modify `web` and `db` with the following contents:
-
-   ```
-   [web]
-   web_private_ip ansible_connection=ssh ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/key.pem
-
-   [db]
-   db_private_ip ansible_connection=ssh ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/key.pem
-   ```
-
-4. NOTE: the IP must be public if your controller is running on Vagrant
-5. The `web`, `db` security groups and NACLs need to be modified to allow the controller to SSH into them
-6. Now, you can execute commands like this: `sudo ansible web -a "command" --ask-vault-pass`
-
-### Using Playbooks to Install Dependencies
-Before carrying out these steps, ensure that `provision_mongodb.yml`, `provision_nginx_proxy.yml` and `provision_nodejs_web.yml` are created with the same contents (change where applicable).
-1. SSH into the web instance and clone your repository: `git clone https://github.com/William-King977/eng84_cicd_jenkins.git`
-2. Modify the database's security group to allow all traffic from the web app
-3. Run the nodejs playbook using `sudo ansible-playbook provision_nodejs_web.yml --ask-vault-pass`. This playbook also executes the other two playbooks mentioned previously.
-4. After running the playbook, the web app will be running on its public IP and the other features will be working as well (posts and Fibonacci)
