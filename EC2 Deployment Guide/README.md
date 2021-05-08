@@ -4,9 +4,9 @@
 2. `mkdir group_vars`, then go inside
 3. `mkdir all`, then go inside
 4. Create the file using `sudo ansible-vault create pass.yml` - then inside, add both keys:
-  * `aws_access_key: place_here`
-  * `aws_secret_key: place_here`
-  * To exit: `Esc` > `Shift` + `:` > `wq` > Enter
+   * `aws_access_key: place_here`
+   * `aws_secret_key: place_here`
+   * To exit: `Esc` > `Shift` + `:` > `wq` > Enter
 
 ## Step 2: Launching EC2 Instances
 1. On the `/etc/ansible` directory, modify the `hosts` file and add the following code to enable Python3:
@@ -19,7 +19,7 @@
 3. Execute `sudo ansible-playbook playbook_name.yml --ask-vault-pass --tags launch_ec2` to launch both EC2 instances
 4. If the above commands worked, both EC2 instances will be running on AWS
 
-## Running Commands from the Controller
+## Step 3: Running Commands from the Controller
 1. Import the key (usually `.pem`):
    * **Vagrant:** `scp ~/.ssh/key_name vagrant@controller_ip:~/.ssh/key_name`
    * **EC2 AWS:** `scp -i ~/.ssh/aws_key -r ~/.ssh/key_name ubuntu@controller_ec2_public_ip:~/.ssh/key_name`
@@ -37,7 +37,7 @@
 4. The `web`, `db` security groups and NACLs need to be modified to allow the controller to SSH into them
 5. Now, you can execute commands like this: `sudo ansible web -a "command" --ask-vault-pass`
 
-## Using Playbooks to Install Dependencies
+## Step 4: Using Playbooks to Install Dependencies
 Before carrying out these steps, ensure that `provision_mongodb.yml`, `provision_nginx_proxy.yml` and `provision_nodejs_web.yml` are created with the same contents (change where applicable).
 1. Modify the database's security group (and NACL) to allow all traffic from the web app
 2. Run the nodejs playbook using `sudo ansible-playbook provision_nodejs_web.yml --ask-vault-pass`. This playbook also executes the other two playbooks mentioned previously.

@@ -103,9 +103,9 @@ pip3 install boto boto3
 2. `mkdir group_vars`, then go inside
 3. `mkdir all`, then go inside
 4. Create the file using `sudo ansible-vault create pass.yml` - then inside, add both keys:
-  * `aws_access_key: place_here`
-  * `aws_secret_key: place_here`
-  * To exit: `Esc` > `Shift` + `:` > `wq` > Enter
+   * `aws_access_key: place_here`
+   * `aws_secret_key: place_here`
+   * To exit: `Esc` > `Shift` + `:` > `wq` > Enter
 * The contents of `pass.yml` is encrypted
 * To run YAML files with the vault: `sudo ansible-playbook install_nginx.yml --ask-vault-pass`
 * It can only be edited with `sudo ansible-vault edit pass.yml`
