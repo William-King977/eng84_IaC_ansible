@@ -44,7 +44,7 @@ Ansible is an IT automation engine that automates cloud provisioning, configurat
 * **Integration** - can be integrated with other tools, such as Docker and Jenkins
 
 ### Ansible Architecture
-![image](https://user-images.githubusercontent.com/44005332/117135325-b0f1b280-ad9e-11eb-913d-b0bd08c951fa.png)
+![image](Diagrams/EC2%20Deployment%20with%20Ansible.png)
 
 ### Adhoc commands
 Adhoc commands can be used to run commands in other servers from the Ansible controller.
@@ -84,7 +84,9 @@ Making playbook files:
 * `sudo ansible-playbook install_nginx.yml` - run the YAML file
 
 ## Ansible Vault
-Dependencies:
+Ansible Vault allows you to keep sensitive data, such as passwords or keys in encrypted file, rather than as plaintext in playbooks. The data inside can be referenced inside playbooks when they need to be used.
+
+### Dependencies
 ```
 sudo apt-get update -y
 sudo apt-get upgrade -y
@@ -105,7 +107,7 @@ pip3 install boto boto3
 4. Create the file using `sudo ansible-vault create pass.yml` - then inside, add both keys:
    * `aws_access_key: place_here`
    * `aws_secret_key: place_here`
-   * To exit: `Esc` > `Shift` + `:` > `wq` > Enter
+   * To exit: `Esc` > `:wq` > Enter
 * The contents of `pass.yml` is encrypted
 * To run YAML files with the vault: `sudo ansible-playbook install_nginx.yml --ask-vault-pass`
 * It can only be edited with `sudo ansible-vault edit pass.yml`

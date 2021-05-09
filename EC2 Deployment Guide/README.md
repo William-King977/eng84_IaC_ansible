@@ -6,7 +6,7 @@
 4. Create the file using `sudo ansible-vault create pass.yml` - then inside, add both keys:
    * `aws_access_key: place_here`
    * `aws_secret_key: place_here`
-   * To exit: `Esc` > `Shift` + `:` > `wq` > Enter
+   * To exit: `Esc` > `:wq` > Enter
 
 ## Step 2: Launching EC2 Instances
 1. On the `/etc/ansible` directory, modify the `hosts` file and add the following code to enable Python3:
