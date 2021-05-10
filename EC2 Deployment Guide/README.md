@@ -40,13 +40,16 @@
 ## Step 4: Using Playbooks to Install Dependencies
 Before carrying out these steps, ensure that `provision_mongodb.yml`, `provision_nginx_proxy.yml` and `provision_nodejs_web.yml` are created with the same contents (change where applicable).
 1. Modify the database's security group (and NACL) to allow all traffic from the web app
-2. Run the nodejs playbook using `sudo ansible-playbook provision_nodejs_web.yml --ask-vault-pass`. This playbook also executes the other two playbooks mentioned previously.
+2. Run the nodejs playbook using `sudo ansible-playbook provision_nodejs_web.yml --ask-vault-pass`. This playbook also executes the other two playbooks mentioned previously. If your playbook execution gets stuck at **Upgrade Linux**, see **Linux Upgrade GRUB Issue**.
 3. After running the playbook, the web app will be running on its public IP and the other features will be working as well (posts and Fibonacci)
 
-NOTE: if your playbook execution gets stuck at **Upgrade Linux**, follow the steps below:
+## Linux Upgrade GRUB Issue
+What happens here is, after performing `sudo apt-get update -y`, the GRUB configuration file somehow gets modified. As a result, the GRUB GUI will display during `sudo apt-get upgrade -y`, requiring user input, and the process gets *stuck* unless one interrupts it. To solve this, follow the steps below:
 1. Interrupt the process with `Ctrl + C`
 2. SSH into the instance being provisioned
 3. Run `sudo killall apt apt-get`
 4. Run `sudo dpkg --configure -a`
-5. When the GUI displays, press `Enter`
+5. When the GUI displays, press `Enter` (keep the local version)
 6. Return to your controller and re-run the playbook
+
+As of writing, this issue is known to happen in Ubuntu 16.04.
