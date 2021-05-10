@@ -42,3 +42,11 @@ Before carrying out these steps, ensure that `provision_mongodb.yml`, `provision
 1. Modify the database's security group (and NACL) to allow all traffic from the web app
 2. Run the nodejs playbook using `sudo ansible-playbook provision_nodejs_web.yml --ask-vault-pass`. This playbook also executes the other two playbooks mentioned previously.
 3. After running the playbook, the web app will be running on its public IP and the other features will be working as well (posts and Fibonacci)
+
+NOTE: if your playbook execution gets stuck at **Upgrade Linux**, follow the steps below:
+1. Interrupt the process with `Ctrl + C`
+2. SSH into the instance being provisioned
+3. Run `sudo killall apt apt-get`
+4. Run `sudo dpkg --configure -a`
+5. When the GUI displays, press `Enter`
+6. Return to your controller and re-run the playbook

@@ -8,9 +8,9 @@
     shell:
       cmd: sudo apt-get update -y
 
-  #- name: Upgrade Linux
-    #shell:
-      #cmd: sudo apt-get upgrade -y
+  - name: Upgrade Linux
+    shell:
+      cmd: sudo apt-get upgrade -y
 
   - name: Install mongodb
     apt: pkg=mongodb state=present
